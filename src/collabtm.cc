@@ -257,7 +257,7 @@ CollabTM::load_validation_and_test_sets()
   if (_env.dataset == Env::NYT)
     _ratings.read_nyt_train(validf, &_test_map);
   else
-    _ratings.read_generic(testf, &_test_map);
+    _ratings.read_generic(testf, &_test_map, false);  // real both positive and negative actions
   fclose(testf);
   printf("+ loaded validation and test sets from %s\n", _env.datfname.c_str());
   fflush(stdout);
@@ -292,6 +292,7 @@ CollabTM::load_validation_and_test_sets()
 
     CountMap::iterator i = _test_map.begin(); 
     while (i != _test_map.end()) {
+      assert(false);  // shouldn't touch anything of in test pairs
       const Rating &r = i->first;
       MovieMap::const_iterator itr = _cold_start_docs.find(r.second);
       if (itr != _cold_start_docs.end()) {
@@ -773,7 +774,7 @@ CollabTM::seq_init()
 }
 
 void
-CollabTM::batch_infer()
+CollabTM::batch_infer(bool on_candidates)
 {
   if (_env.decoupled)  {
     assert (_env.use_ratings && _env.use_docs);
@@ -940,6 +941,9 @@ CollabTM::batch_infer()
       if (_env.use_ratings) {
 	compute_likelihood(true);
 	compute_likelihood(false);
+    if (on_candidates)
+        precision_on_candidates();
+    else
 	precision();
       }
       save_model();
@@ -1955,6 +1959,27 @@ CollabTM::precision()
   fflush(_df);
 }
 
+void
+CollabTM::precision_on_candidates()
+{ 
+  // predict scores for all pairs in _test_map and save results in pred.tsv
+  char buf[65535];
+  sprintf(buf, "%s_%d.tsv", Env::file_str("/score").c_str(), _iter);
+  FILE *f = fopen(buf, "w");
+  for (CountMap::const_iterator cm = _test_map.begin(); cm != _test_map.end(); ++cm) { 
+  	const Rating &r = cm->first;
+	uint32_t uid = r.first;
+	uint32_t mid = r.second;
+    int truth = cm->second;
+	double pred = per_rating_prediction(uid, mid); 
+
+    uid = _ratings.to_user_id(uid);
+    mid = _ratings.to_movie_id(mid);
+    //printf("%d\t%d\t%d\t%f\n", uid, mid, truth, pred);
+    fprintf(f, "%d\t%d\t%d\t%.10f\n", uid, mid, truth, pred);
+  }
+  fclose(f);
+}
 
 void
 CollabTM::coldstart_precision()

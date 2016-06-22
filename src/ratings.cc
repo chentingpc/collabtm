@@ -66,7 +66,7 @@ Ratings::read_generic_train(string dir)
 }
 
 int
-Ratings::read_generic(FILE *f, CountMap *cmap)
+Ratings::read_generic(FILE *f, CountMap *cmap, bool positive_rating_only)
 {
   assert(f);
   char b[128];
@@ -78,29 +78,34 @@ Ratings::read_generic(FILE *f, CountMap *cmap)
       exit(-1);
     }
     IDMap::iterator mt = _movie2seq.find(mid);
-    if (_movies_read && mt == _movie2seq.end())  // skip this entry
+    if (_movies_read && mt == _movie2seq.end()) {  // skip this entry
+      assert(false);  // not sure what's going on, but def need to check it out!
       continue;
+    }
 
     IDMap::iterator it = _user2seq.find(uid);
     if (it == _user2seq.end() && !add_user(uid)) {
-      //lerr("error: exceeded user limit %d, %d, %d\n",
-      //uid, mid, rating);
-      //fflush(stdout);
+      // possible reason: some user has never appeared in train.dat
+      printf("error: exceeded user limit %d, %d, %d\n",
+       uid, mid, rating);
+       fflush(stdout);
       continue;
     }
     
     if (mt == _movie2seq.end() && !add_movie(mid)) {
-      //printf("error: exceeded movie limit %d, %d, %d\n",
-      //uid, mid, rating);
-      //fflush(stdout);
+      // possible reason: the item referred here is appeared in mult.dat
+      printf("error: exceeded movie limit %d, %d, %d\n",
+      uid, mid, rating);
+      fflush(stdout);
       continue;
     }
     
     uint32_t m = _movie2seq[mid];
     uint32_t n = _user2seq[uid];
     
-    if (rating > 0) {
+    if (!positive_rating_only || rating > 0) {
       if (!cmap) {
+        assert(positive_rating_only);  // !positive_rating_only == test data, make sure test don't go here
 	_nratings++;
 	RatingMap *rm = _users2rating[n];
 	if (_env.binary_data)

@@ -57,7 +57,7 @@ public:
 
   const IDMap &movie2seq() const { return _movie2seq; }
   const IDMap &seq2movie() const { return _seq2movie; }
-  int read_generic(FILE *f, CountMap *m);
+  int read_generic(FILE *f, CountMap *m, bool positive_rating_only=true);
   void load_movies_metadata(string dir);
   int read_test_users(FILE *f, UserMap *);
   int read_nyt_train(FILE *f, CountMap *cmap);

@@ -237,6 +237,9 @@ main(int argc, char **argv)
   
   if (!ppc) {
     CollabTM collabtm(env, ratings);
+    printf("[INFO!] doing re-defined batch_infer on_candidates\n");
+    collabtm.batch_infer(true);
+    /*
     if (gen_ranking_for_users)
       collabtm.gen_ranking_for_users();
     else if (to_mult)
@@ -245,6 +248,7 @@ main(int argc, char **argv)
       collabtm.batch_infer();
     else
       collabtm.online_infer(); // stochastic inference
+    */
 
   } else {
     CollabTM collabtm(env, ratings);

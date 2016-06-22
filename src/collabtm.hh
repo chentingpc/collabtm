@@ -10,7 +10,7 @@ public:
   CollabTM(Env &env, Ratings &ratings);
   ~CollabTM();
   
-  void batch_infer();
+  void batch_infer(bool on_candidates=false);
   void online_infer(); 
   void write_mult_format();
 
@@ -22,6 +22,7 @@ private:
   void initialize_perturb_betas();
   void approx_log_likelihood();
   void precision(); 
+  void precision_on_candidates(); 
   void coldstart_precision();
 
   void get_phi(GPBase<Matrix> &a, uint32_t ai, 

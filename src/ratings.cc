@@ -406,6 +406,8 @@ Ratings::read_generic_docs(string dir)
   Env::plog("read docs ids", mcurr);
 
 
+  FILE *f = NULL;
+  /* there is no _str2id, which leads to segmentfault
   sprintf(buf, "%s/str2id.tsv", dir.c_str());
   uint32_t q = 0;
   FILE *f = fopen(buf, "w");
@@ -419,6 +421,7 @@ Ratings::read_generic_docs(string dir)
   Env::plog("wrote %d str2id entries", q);
   
   info("reading from %s\n", buf);
+  */
 
   sprintf(buf, "%s/mult.dat", dir.c_str());
   f = fopen(buf, "r");

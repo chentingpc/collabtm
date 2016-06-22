@@ -1,0 +1,10 @@
+bin/
+*.o
+Makefile
+config.log
+config.status
+src/.deps/
+src/Makefile
+src/collabtm
+src/roc
+

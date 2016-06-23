@@ -492,6 +492,10 @@ CollabTM::gen_ranking_for_users()
 void
 CollabTM::do_on_stop()
 {
+  save_model();
+  printf("[!INFO] will not generate ranked items for users in test_user.tsv\n");
+  return;  // no need to generate the list
+
   // load test users 
   _sampled_users.clear();
   char buf[4096];
@@ -939,7 +943,7 @@ CollabTM::batch_infer(bool on_candidates)
       lerr("Iteration %d\n", _iter);
       approx_log_likelihood();
       if (_env.use_ratings) {
-	compute_likelihood(true);
+	compute_likelihood(true);  // may exit if likelihood converges
 	compute_likelihood(false);
     if (on_candidates)
         precision_on_candidates();
@@ -955,6 +959,11 @@ CollabTM::batch_infer(bool on_candidates)
     }
 
     _iter++;
+
+    if (_iter >= _env.max_iterations) {
+      do_on_stop();
+      exit(0);
+    }
   }
 }
 
